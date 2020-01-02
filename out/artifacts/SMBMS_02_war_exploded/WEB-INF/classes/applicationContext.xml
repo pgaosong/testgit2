@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	   http://www.springframework.org/schema/aop
+	   http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+	   http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+    <!-- 引入外部资源 -->
+    <context:property-placeholder location="classpath:database.properties"/>
+
+    <!-- 1.配置数据源 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!-- 2.配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 引用数据源进行连接 -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 引用MyBatis配置文件中的配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!-- 4.配置Mapper-映射器实现类方式二-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 自动扫描mapper包底下的接口（自动装配，自动注入SqlSessionFactory实例，若配置多个SqlSessionFactory实例，则无法自动装配） -->
+        <property name="basePackage" value="cn.smbms.dao"/>
+    </bean>
+
+    <!-- 5-1.扫描注解定义的业务bean 方便程序运行时根据注解自动创建bean -->
+    <context:component-scan base-package="cn.smbms.*"/>
+
+    <!-- 5.配置Service组件并注入Mapper实例 -->
+    <!--<bean id="providerService" class="com.java.service.impl.ProviderServiceImpl">
+        <property name="providerMapper" ref="providerMapper"/>
+    </bean>-->
+
+    <!-- 配置文件上传MultipartResolver -->
+    <!--<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="500000"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>-->
+
+    <!-- 启动AOP注解支持 -->
+    <aop:aspectj-autoproxy/>
+
+
+
+    <!-- 定义事务管理器 (需要注入定义的数据源组件)-->
+    <!--<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>-->
+    <!-- 配置事务增强 -->
+    <!--<tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="find*" propagation="SUPPORTS"/>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="del*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>-->
+    <!-- 配置事务切面 -->
+    <!--<aop:config>
+        &lt;!&ndash; 定义切点 &ndash;&gt;
+        <aop:pointcut id="pointcut" expression="execution(* cn.smbms.*.*(..))"/>
+        &lt;!&ndash; 组合事务增强和切点 &ndash;&gt;
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+    </aop:config>-->
+
+</beans>
